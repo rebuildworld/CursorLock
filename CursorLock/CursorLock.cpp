@@ -13,8 +13,8 @@
 
 // 全局变量:
 HINSTANCE hInst;                                // 当前实例
-WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
-WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
+TCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
+TCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -76,9 +76,9 @@ HWND GetProcessMainWindow(DWORD pid)
 	return ei.window;
 }
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
-	_In_ LPWSTR    lpCmdLine,
+	_In_ LPTSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
@@ -87,8 +87,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// TODO: 在此处放置代码。
 
 	// 初始化全局字符串
-	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	LoadStringW(hInstance, IDC_CURSORLOCK, szWindowClass, MAX_LOADSTRING);
+	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+	LoadString(hInstance, IDC_CURSORLOCK, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
 
 	// 执行应用程序初始化:
@@ -111,18 +111,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (pid == 0)
 	{
 		MessageBox(nullptr, _T("Process not found."), _T("CursorLock"), MB_OK);
-		return FALSE;
+		return 1;
 	}
 	HWND window = GetProcessMainWindow(pid);
 	if (window == nullptr)
 	{
 		MessageBox(nullptr, _T("Window not found."), _T("CursorLock"), MB_OK);
-		return FALSE;
+		return 1;
 	}
 	if (!Hook(window, visible))
 	{
 		MessageBox(nullptr, _T("Hook failed."), _T("CursorLock"), MB_OK);
-		return FALSE;
+		return 1;
 	}
 
 	MSG msg;
@@ -151,7 +151,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
-	WNDCLASSEXW wcex;
+	WNDCLASSEX wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
 
@@ -163,11 +163,11 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CURSORLOCK));
 	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_CURSORLOCK);
+	wcex.lpszMenuName = MAKEINTRESOURCE(IDC_CURSORLOCK);
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-	return RegisterClassExW(&wcex);
+	return RegisterClassEx(&wcex);
 }
 
 //
@@ -184,7 +184,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	hInst = hInstance; // 将实例句柄存储在全局变量中
 
-	HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+	HWND hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
 	if (!hWnd)
